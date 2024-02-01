@@ -1,0 +1,124 @@
+diff --git a/src/components/Operation/Operation.tsx b/src/components/Operation/Operation.tsx
+index b6904f6..d3c8c0b 100644
+--- a/src/components/Operation/Operation.tsx
++++ b/src/components/Operation/Operation.tsx
+@@ -18,6 +18,8 @@ import { ResponsesList } from '../Responses/ResponsesList';
+ import { ResponseSamples } from '../ResponseSamples/ResponseSamples';
+ import { SecurityRequirements } from '../SecurityRequirement/SecurityRequirement';
+ import { SECTION_ATTR } from '../../services';
++import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
++import 'react-tabs/style/react-tabs.css';
+ 
+ const Description = styled.div`
+   margin-bottom: ${({ theme }) => theme.spacing.unit * 6}px;
+@@ -57,14 +59,28 @@ export const Operation = observer(({ operation }: OperationProps): JSX.Element =
+             )}
+             <Extensions extensions={operation.extensions} />
+             <SecurityRequirements securities={operation.security} />
+-            <Parameters parameters={operation.parameters} body={operation.requestBody} />
+-            <ResponsesList responses={operation.responses} />
++            <Tabs>
++                <TabList>
++                  <Tab>Request</Tab>
++                  <Tab>Response</Tab>
++                  <Tab>Errors</Tab>
++                  <Tab></Tab>
++                  <Tab></Tab>
++                </TabList>
++                <TabPanel>
++                  <Parameters parameters={operation.parameters} body={operation.requestBody} /> 
++                </TabPanel>
++                <TabPanel>
++                  <ResponsesList responses={operation.responses.filter(response => response.code == "200")} />
++                </TabPanel>
++                <TabPanel>
++                  <ResponsesList responses={operation.responses.filter(response => response.code != "200")} />
++                </TabPanel>
++              </Tabs>
+             <CallbacksList callbacks={operation.callbacks} />
+           </MiddlePanel>
+           <DarkRightPanel>
+             {!options.pathInMiddlePanel && !isWebhook && <Endpoint operation={operation} />}
+-            <RequestSamples operation={operation} />
+-            <ResponseSamples operation={operation} />
+             <CallbackSamples callbacks={operation.callbacks} />
+           </DarkRightPanel>
+         </Row>
+diff --git a/src/components/Responses/ResponsesList.tsx b/src/components/Responses/ResponsesList.tsx
+index e578a1c..18e9d17 100644
+--- a/src/components/Responses/ResponsesList.tsx
++++ b/src/components/Responses/ResponsesList.tsx
+@@ -1,17 +1,8 @@
+ import * as React from 'react';
+ import { l } from '../../services/Labels';
+ import { ResponseModel } from '../../services/models';
+-import styled from '../../styled-components';
+ import { ResponseView } from './Response';
+ 
+-const ResponsesHeader = styled.h3`
+-  font-size: 1.3em;
+-  padding: 0.2em 0;
+-  margin: 3em 0 1.1em;
+-  color: ${({ theme }) => theme.colors.text.primary};
+-  font-weight: normal;
+-`;
+-
+ export interface ResponseListProps {
+   responses: ResponseModel[];
+   isCallback?: boolean;
+@@ -19,7 +10,7 @@ export interface ResponseListProps {
+ 
+ export class ResponsesList extends React.PureComponent<ResponseListProps> {
+   render() {
+-    const { responses, isCallback } = this.props;
++    const { responses } = this.props;
+ 
+     if (!responses || responses.length === 0) {
+       return null;
+@@ -27,7 +18,6 @@ export class ResponsesList extends React.PureComponent<ResponseListProps> {
+ 
+     return (
+       <div>
+-        <ResponsesHeader>{isCallback ? l('callbackResponses') : l('responses')}</ResponsesHeader>
+         {responses.map(response => {
+           return <ResponseView key={response.code} response={response} />;
+         })}
+diff --git a/src/components/SecurityRequirement/SecurityRequirement.tsx b/src/components/SecurityRequirement/SecurityRequirement.tsx
+index 046ef4e..1b82f80 100644
+--- a/src/components/SecurityRequirement/SecurityRequirement.tsx
++++ b/src/components/SecurityRequirement/SecurityRequirement.tsx
+@@ -37,7 +37,7 @@ export function SecurityRequirements(props: SecurityRequirementsProps) {
+ 
+   return (
+     <>
+-      <Wrap $expanded={expanded}>
++      <Wrap id="auth-header" $expanded={expanded}>
+         <AuthHeaderColumn onClick={() => setExpanded(!expanded)}>
+           <AuthHeader>Authorizations:</AuthHeader>
+           <ShelfIcon size={'1.3em'} direction={expanded ? 'down' : 'right'} />
+diff --git a/src/components/SideMenu/SideMenu.tsx b/src/components/SideMenu/SideMenu.tsx
+index 58dd34c..b27660a 100644
+--- a/src/components/SideMenu/SideMenu.tsx
++++ b/src/components/SideMenu/SideMenu.tsx
+@@ -7,8 +7,6 @@ import { OptionsContext } from '../OptionsProvider';
+ import { MenuItems } from './MenuItems';
+ 
+ import { PerfectScrollbarWrap } from '../../common-elements/perfect-scrollbar';
+-import { RedocAttribution } from './styled.elements';
+-import RedoclyLogo from './Logo';
+ 
+ @observer
+ export class SideMenu extends React.Component<{ menu: MenuStore; className?: string }> {
+@@ -26,12 +24,6 @@ export class SideMenu extends React.Component<{ menu: MenuStore; className?: str
+         }}
+       >
+         <MenuItems items={store.items} onActivate={this.activate} root={true} />
+-        <RedocAttribution>
+-          <a target="_blank" rel="noopener noreferrer" href="https://redocly.com/redoc/">
+-            <RedoclyLogo />
+-            API docs by Redocly
+-          </a>
+-        </RedocAttribution>
+       </PerfectScrollbarWrap>
+     );
+   }

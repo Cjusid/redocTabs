@@ -37,7 +37,7 @@ export function SecurityRequirements(props: SecurityRequirementsProps) {
 
   return (
     <>
-      <Wrap $expanded={expanded}>
+      <Wrap id="auth-header" $expanded={expanded}>
         <AuthHeaderColumn onClick={() => setExpanded(!expanded)}>
           <AuthHeader>Authorizations:</AuthHeader>
           <ShelfIcon size={'1.3em'} direction={expanded ? 'down' : 'right'} />

@@ -18,6 +18,8 @@ import { ResponsesList } from '../Responses/ResponsesList';
 import { ResponseSamples } from '../ResponseSamples/ResponseSamples';
 import { SecurityRequirements } from '../SecurityRequirement/SecurityRequirement';
 import { SECTION_ATTR } from '../../services';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
 
 const Description = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.unit * 6}px;
@@ -57,14 +59,28 @@ export const Operation = observer(({ operation }: OperationProps): JSX.Element =
             )}
             <Extensions extensions={operation.extensions} />
             <SecurityRequirements securities={operation.security} />
-            <Parameters parameters={operation.parameters} body={operation.requestBody} />
-            <ResponsesList responses={operation.responses} />
+            <Tabs>
+                <TabList>
+                  <Tab>Request</Tab>
+                  <Tab>Response</Tab>
+                  <Tab>Errors</Tab>
+                  <Tab></Tab>
+                  <Tab></Tab>
+                </TabList>
+                <TabPanel>
+                  <Parameters parameters={operation.parameters} body={operation.requestBody} /> 
+                </TabPanel>
+                <TabPanel>
+                  <ResponsesList responses={operation.responses.filter(response => response.code == "200")} />
+                </TabPanel>
+                <TabPanel>
+                  <ResponsesList responses={operation.responses.filter(response => response.code != "200")} />
+                </TabPanel>
+              </Tabs>
             <CallbacksList callbacks={operation.callbacks} />
           </MiddlePanel>
           <DarkRightPanel>
             {!options.pathInMiddlePanel && !isWebhook && <Endpoint operation={operation} />}
-            <RequestSamples operation={operation} />
-            <ResponseSamples operation={operation} />
             <CallbackSamples callbacks={operation.callbacks} />
           </DarkRightPanel>
         </Row>
